@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learn Cool Russian Words from Songs</title>
+    <title>Learn Russian Through Songs with Audio</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -31,12 +31,18 @@
             flex-direction: column;
             justify-content: center;
             border: 1px solid #eee;
+            position: relative;
         }
         .word {
             font-size: 3em;
             margin-bottom: 15px;
             color: #2c3e50;
             font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .word:hover {
+            transform: scale(1.05);
         }
         .translation {
             font-size: 1.8em;
@@ -71,6 +77,10 @@
             flex: 1;
             min-width: 120px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
         button:hover {
             transform: translateY(-2px);
@@ -112,10 +122,21 @@
             color: #2c3e50;
             font-weight: bold;
         }
-        .song-icon {
+        .audio-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
             font-size: 1.5em;
-            margin-right: 5px;
-            vertical-align: middle;
+            color: #3498db;
+            cursor: pointer;
+            padding: 5px;
+            min-width: auto;
+        }
+        .audio-btn:hover {
+            color: #2980b9;
+            transform: scale(1.1);
         }
         @media (max-width: 600px) {
             .word { font-size: 2.2em; }
@@ -128,15 +149,16 @@
     <h1>🎵 Learn Russian Through Popular Songs 🎶</h1>
     
     <div class="card">
+        <button class="audio-btn" id="play-audio">🔊</button>
         <div class="word" id="current-word">Click "Next Word" to begin!</div>
         <div class="translation" id="current-translation"></div>
         <div class="example" id="current-example"></div>
     </div>
     
     <div class="controls">
-        <button id="show-translation">🎤 Show Meaning</button>
-        <button id="next-word">▶ Next Word</button>
-        <button class="known-btn" id="mark-known">✓ I Know This</button>
+        <button id="show-translation"><span class="song-icon">🎤</span> Show Meaning</button>
+        <button id="next-word"><span class="song-icon">▶</span> Next Word</button>
+        <button class="known-btn" id="mark-known"><span class="song-icon">✓</span> I Know This</button>
     </div>
     
     <div class="progress-container">
@@ -145,9 +167,10 @@
     
     <div class="stats">
         <div class="counter">Words learned: <span id="known-count">0</span>/100</div>
-        <button class="reset-btn" id="reset-progress">⟲ Reset Progress</button>
+        <button class="reset-btn" id="reset-progress"><span class="song-icon">⟲</span> Reset Progress</button>
     </div>
-    
+
+    <script src="https://code.responsivevoice.org/responsivevoice.js"></script>
     <script>
         // More interesting words from Russian songs and pop culture
         const words = [
@@ -237,11 +260,6 @@
                 example: "Дайте крылья мне (Give me wings) - song lyric"
             },
             { 
-                russian: "огонь", 
-                english: "fire", 
-                example: "Гори, гори, моя звезда (Burn, burn, my star) - classic romance"
-            },
-            { 
                 russian: "грусть", 
                 english: "sadness", 
                 example: "Грусть моя светла (My sadness is light) - poetic phrase"
@@ -268,6 +286,7 @@
         const progressBar = document.getElementById('progress-bar');
         const knownCountElement = document.getElementById('known-count');
         const resetBtn = document.getElementById('reset-progress');
+        const playAudioBtn = document.getElementById('play-audio');
         
         // Display initial progress
         updateProgress();
@@ -277,6 +296,8 @@
         nextWordBtn.addEventListener('click', showNextWord);
         markKnownBtn.addEventListener('click', toggleKnownWord);
         resetBtn.addEventListener('click', resetProgress);
+        playAudioBtn.addEventListener('click', playCurrentWordAudio);
+        wordElement.addEventListener('click', playCurrentWordAudio);
         
         // Functions
         function showNextWord() {
@@ -342,6 +363,24 @@
                 markKnownBtn.style.backgroundColor = "#2ecc71";
                 showNextWord();
             }
+        }
+        
+        function playCurrentWordAudio() {
+            const currentWord = words[currentWordIndex].russian;
+            responsiveVoice.speak(currentWord, "Russian Female", {
+                rate: 0.8,
+                pitch: 1,
+                onstart: () => {
+                    playAudioBtn.textContent = "🔊";
+                    playAudioBtn.style.color = "#e74c3c";
+                    wordElement.style.color = "#e74c3c";
+                },
+                onend: () => {
+                    playAudioBtn.textContent = "🔊";
+                    playAudioBtn.style.color = "#3498db";
+                    wordElement.style.color = "#2c3e50";
+                }
+            });
         }
         
         // Start with first word
