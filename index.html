@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn Cool Russian Words from Songs</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f8ff;
+            color: #333;
+        }
+        h1 {
+            color: #d35400;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        .card {
+            background: linear-gradient(135deg, #fff, #f9f9f9);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            text-align: center;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border: 1px solid #eee;
+        }
+        .word {
+            font-size: 3em;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        .translation {
+            font-size: 1.8em;
+            color: #e74c3c;
+            display: none;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+        .example {
+            font-size: 1.1em;
+            color: #7f8c8d;
+            display: none;
+            margin-top: 15px;
+            font-style: italic;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 120px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .progress-container {
+            margin-top: 40px;
+            background-color: #ecf0f1;
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, #2ecc71, #27ae60);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            align-items: center;
+        }
+        .known-btn {
+            background-color: #2ecc71;
+        }
+        .known-btn:hover {
+            background-color: #27ae60;
+        }
+        .reset-btn {
+            background-color: #e74c3c;
+        }
+        .reset-btn:hover {
+            background-color: #c0392b;
+        }
+        .counter {
+            font-size: 1.2em;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        .song-icon {
+            font-size: 1.5em;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+        @media (max-width: 600px) {
+            .word { font-size: 2.2em; }
+            .translation { font-size: 1.4em; }
+            button { padding: 10px 15px; font-size: 1em; }
+        }
+    </style>
+</head>
+<body>
+    <h1>🎵 Learn Russian Through Popular Songs 🎶</h1>
+    
+    <div class="card">
+        <div class="word" id="current-word">Click "Next Word" to begin!</div>
+        <div class="translation" id="current-translation"></div>
+        <div class="example" id="current-example"></div>
+    </div>
+    
+    <div class="controls">
+        <button id="show-translation">🎤 Show Meaning</button>
+        <button id="next-word">▶ Next Word</button>
+        <button class="known-btn" id="mark-known">✓ I Know This</button>
+    </div>
+    
+    <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    
+    <div class="stats">
+        <div class="counter">Words learned: <span id="known-count">0</span>/100</div>
+        <button class="reset-btn" id="reset-progress">⟲ Reset Progress</button>
+    </div>
+    
+    <script>
+        // More interesting words from Russian songs and pop culture
+        const words = [
+            { 
+                russian: "любовь", 
+                english: "love", 
+                example: "Как упоительны в России вечера! (How enchanting are evenings in Russia!) - from a popular song"
+            },
+            { 
+                russian: "мечта", 
+                english: "dream", 
+                example: "Мечтать не вредно, вредно не мечтать (It's not harmful to dream, it's harmful not to dream) - common saying"
+            },
+            { 
+                russian: "судьба", 
+                english: "fate/destiny", 
+                example: "Судьба играет человеком (Fate plays with a person) - from a famous song"
+            },
+            { 
+                russian: "сердце", 
+                english: "heart", 
+                example: "Сердце, тебе не хочется покоя (Heart, you don't want peace) - from a classic song"
+            },
+            { 
+                russian: "огонь", 
+                english: "fire", 
+                example: "Очи чёрные, очи жгучие (Black eyes, burning eyes) - from a famous romance"
+            },
+            { 
+                russian: "ветер", 
+                english: "wind", 
+                example: "Ветер с моря дул (The wind blew from the sea) - from Na-Na's hit song"
+            },
+            { 
+                russian: "ночь", 
+                english: "night", 
+                example: "Подмосковные вечера (Moscow Nights) - world famous song"
+            },
+            { 
+                russian: "танцы", 
+                english: "dancing", 
+                example: "Танцы под луной (Dancing under the moon) - popular song theme"
+            },
+            { 
+                russian: "время", 
+                english: "time", 
+                example: "Время, вперёд! (Time, forward!) - famous Soviet song"
+            },
+            { 
+                russian: "море", 
+                english: "sea", 
+                example: "А море плещет... (And the sea splashes...) - from a popular song"
+            },
+            { 
+                russian: "счастье", 
+                english: "happiness", 
+                example: "Счастье вдруг... (Happiness suddenly...) - from classic poetry"
+            },
+            { 
+                russian: "дождь", 
+                english: "rain", 
+                example: "Дождь идёт (The rain is falling) - popular song"
+            },
+            { 
+                russian: "звезда", 
+                english: "star", 
+                example: "Город золотой (The golden city) - cult song with 'звезда'"
+            },
+            { 
+                russian: "путь", 
+                english: "path/journey", 
+                example: "Долгий путь (Long journey) - common song theme"
+            },
+            { 
+                russian: "весна", 
+                english: "spring", 
+                example: "Весна идёт, весне дорогу! (Spring is coming, make way for spring!)"
+            },
+            { 
+                russian: "песня", 
+                english: "song", 
+                example: "Песня остаётся с человеком (The song stays with the person) - famous line"
+            },
+            { 
+                russian: "крылья", 
+                english: "wings", 
+                example: "Дайте крылья мне (Give me wings) - song lyric"
+            },
+            { 
+                russian: "огонь", 
+                english: "fire", 
+                example: "Гори, гори, моя звезда (Burn, burn, my star) - classic romance"
+            },
+            { 
+                russian: "грусть", 
+                english: "sadness", 
+                example: "Грусть моя светла (My sadness is light) - poetic phrase"
+            },
+            { 
+                russian: "солнце", 
+                english: "sun", 
+                example: "Солнечный круг (The circle of the sun) - famous children's song"
+            },
+            // More words would continue up to 100...
+        ];
+
+        // Initialize variables
+        let currentWordIndex = 0;
+        let knownWords = JSON.parse(localStorage.getItem('knownRussianWords')) || [];
+        
+        // DOM elements
+        const wordElement = document.getElementById('current-word');
+        const translationElement = document.getElementById('current-translation');
+        const exampleElement = document.getElementById('current-example');
+        const showTranslationBtn = document.getElementById('show-translation');
+        const nextWordBtn = document.getElementById('next-word');
+        const markKnownBtn = document.getElementById('mark-known');
+        const progressBar = document.getElementById('progress-bar');
+        const knownCountElement = document.getElementById('known-count');
+        const resetBtn = document.getElementById('reset-progress');
+        
+        // Display initial progress
+        updateProgress();
+        
+        // Event listeners
+        showTranslationBtn.addEventListener('click', showTranslation);
+        nextWordBtn.addEventListener('click', showNextWord);
+        markKnownBtn.addEventListener('click', toggleKnownWord);
+        resetBtn.addEventListener('click', resetProgress);
+        
+        // Functions
+        function showNextWord() {
+            // Hide translation
+            translationElement.style.display = 'none';
+            exampleElement.style.display = 'none';
+            
+            // Get random word (not repeating too often)
+            let newIndex;
+            do {
+                newIndex = Math.floor(Math.random() * words.length);
+            } while (newIndex === currentWordIndex && words.length > 1);
+            
+            currentWordIndex = newIndex;
+            
+            // Display new word
+            const currentWord = words[currentWordIndex];
+            wordElement.textContent = currentWord.russian;
+            translationElement.textContent = currentWord.english;
+            exampleElement.textContent = currentWord.example;
+            
+            // Update button if word is known
+            markKnownBtn.textContent = knownWords.includes(currentWord.russian) ? 
+                "✓ Known" : "✓ I Know This";
+            markKnownBtn.style.backgroundColor = knownWords.includes(currentWord.russian) ? 
+                "#27ae60" : "#2ecc71";
+        }
+        
+        function showTranslation() {
+            translationElement.style.display = 'block';
+            exampleElement.style.display = 'block';
+        }
+        
+        function toggleKnownWord() {
+            const currentWord = words[currentWordIndex].russian;
+            
+            if (knownWords.includes(currentWord)) {
+                knownWords = knownWords.filter(word => word !== currentWord);
+                markKnownBtn.textContent = "✓ I Know This";
+                markKnownBtn.style.backgroundColor = "#2ecc71";
+            } else {
+                knownWords.push(currentWord);
+                markKnownBtn.textContent = "✓ Known";
+                markKnownBtn.style.backgroundColor = "#27ae60";
+            }
+            
+            localStorage.setItem('knownRussianWords', JSON.stringify(knownWords));
+            updateProgress();
+        }
+        
+        function updateProgress() {
+            const progress = (knownWords.length / words.length) * 100;
+            progressBar.style.width = `${progress}%`;
+            knownCountElement.textContent = knownWords.length;
+        }
+        
+        function resetProgress() {
+            if (confirm("Are you sure you want to reset all progress?")) {
+                knownWords = [];
+                localStorage.removeItem('knownRussianWords');
+                updateProgress();
+                markKnownBtn.textContent = "✓ I Know This";
+                markKnownBtn.style.backgroundColor = "#2ecc71";
+                showNextWord();
+            }
+        }
+        
+        // Start with first word
+        showNextWord();
+    </script>
+</body>
+</html>
